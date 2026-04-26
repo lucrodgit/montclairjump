@@ -13,11 +13,11 @@ FPS = 60
 
 
 # Colors
-RED   = (209, 25, 13)
+RED = (209, 25, 13)
 BLACK = ( 51, 51, 51)
 WHITE = (255, 255, 255)
-GRAY  = (200, 200, 200)
-SKY   = (124, 199, 242) # light blue sky color
+GRAY = (200, 200, 200)
+SKY = (124, 199, 242) # light blue sky color
 
 
 # Ground
@@ -33,7 +33,8 @@ JUMP_STRENGTH = -15
 SPRITE_PATH = os.path.join("assets", "hawk.png")
 
 # Building Image
-BUILDING_PATH = os.path.join("assets", "building.png")
+OBSTACLES = [os.path.join("assets", "building.png"), os.path.join("assets", "building2.png")]
+BUILDING_PATH = random.choice(OBSTACLES)
 
 
 # Player Class ( jumping and stuff )
@@ -41,11 +42,11 @@ class Player:
     W, H = 80, 90  # player hitbox
 
     def __init__(self):
-        self.x        = 100
-        self.y        = GROUND_Y - self.H
-        self.vel_y    = 0                  # y velocity
+        self.x = 100
+        self.y = GROUND_Y - self.H
+        self.vel_y = 0 # y velocity
         self.grounded = True
-        self.sprite   = None
+        self.sprite = None
 
         if os.path.exists(SPRITE_PATH):
             img = pygame.image.load(SPRITE_PATH).convert_alpha()
@@ -54,16 +55,16 @@ class Player:
     def jump(self):
         # player jumps only if they are on the ground
         if self.grounded:
-            self.vel_y    = JUMP_STRENGTH
+            self.vel_y = JUMP_STRENGTH
             self.grounded = False
 
     # gravity
     def update(self):
         self.vel_y += GRAVITY
-        self.y     += self.vel_y
+        self.y += self.vel_y
         if self.y >= GROUND_Y - self.H:   # stopping gravity when at ground
-            self.y        = GROUND_Y - self.H
-            self.vel_y    = 0
+            self.y = GROUND_Y - self.H
+            self.vel_y = 0
             self.grounded = True
 
     def draw(self, screen):
@@ -77,13 +78,13 @@ class Player:
 
 
 class Obstacle:  # obstacle class
-    IMG_W, IMG_H = 70, 140  # building size
+    IMG_W, IMG_H = 120, 140  # building size
 
     def __init__(self):
         self.x = WIDTH + random.randint(200, 500)
         self.y = HEIGHT - self.IMG_H + 35  # pinned to bottom 
         self.sprite = None
-
+        BUILDING_PATH = random.choice(OBSTACLES)
         if os.path.exists(BUILDING_PATH):
             img = pygame.image.load(BUILDING_PATH).convert_alpha()
             self.sprite = pygame.transform.scale(img, (self.IMG_W, self.IMG_H))
@@ -110,9 +111,9 @@ def main():
     pygame.display.set_caption("Montclair Jump")
     clock  = pygame.time.Clock()
 
-    player   = Player()
+    player = Player()
     obstacle = Obstacle()
-    speed    = 6
+    speed = 6
 
     while True:
         clock.tick(FPS)
