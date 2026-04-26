@@ -21,7 +21,7 @@ SKY   = (124, 199, 242) # light blue sky color
 
 
 # Ground
-GROUND_Y = HEIGHT - 70
+GROUND_Y = HEIGHT + -5
 
 
 # Player
@@ -38,10 +38,10 @@ BUILDING_PATH = os.path.join("assets", "building.png")
 
 # Player Class ( jumping and stuff )
 class Player:
-    W, H = 50, 60  # player hitbox
+    W, H = 80, 90  # player hitbox
 
     def __init__(self):
-        self.x        = 120
+        self.x        = 100
         self.y        = GROUND_Y - self.H
         self.vel_y    = 0                  # y velocity
         self.grounded = True
@@ -77,7 +77,7 @@ class Player:
 
 
 class Obstacle:  # obstacle class
-    IMG_W, IMG_H = 100, 190  # building size
+    IMG_W, IMG_H = 70, 140  # building size
 
     def __init__(self):
         self.x = WIDTH + random.randint(200, 500)
@@ -137,6 +137,7 @@ def main():
         obstacle.draw(screen)
         player.draw(screen)
         pygame.display.flip()
+        
 
 
 if __name__ == "__main__":
