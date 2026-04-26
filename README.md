@@ -1,14 +1,14 @@
 ﻿# MontclairJump
 
-Features so far:
--- Jumping and falling gravity
--- Obstacle class with movement
-
-Need to add:
--- More obstacle types
--- Getting hit = game over
--- Score
--- Speedup after time
--- actual start and end screen
+Features so far:\n
+-- Jumping and falling gravity\n
+-- Obstacle class with movement\n
+\n\n
+Need to add:\n
+-- More obstacle types\n
+-- Getting hit = game over\n
+-- Score\n
+-- Speedup after time\n
+-- actual start and end screen\n
 
  
