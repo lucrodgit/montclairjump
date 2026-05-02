@@ -103,6 +103,18 @@ class Obstacle:  # obstacle class
 
     def off_screen(self):
         return self.x + self.IMG_W < 0
+    
+
+class SpeedIncrease: # increase speed class
+    def __init__(self, start_speed=6, max_speed=20, increase_rate=0.002):
+        self.speed = start_speed # current speed
+        self.max_speed = max_speed # speed cap
+        self.increase_rate = increase_rate #rate of increase
+
+    def update(self): #increase speed each frame
+        if self.speed < self.max_speed:
+            self.speed += self.increase_rate
+        return self.speed
 
 
 #main game loop
@@ -115,6 +127,8 @@ def main():
     obstacle = Obstacle()
     speed = 6
 
+    speed_increase = SpeedIncrease(start_speed=speed) #manage speed increase
+
     while True:
         clock.tick(FPS)
 
@@ -124,6 +138,8 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_SPACE, pygame.K_UP): # jump on space or up arrow
                     player.jump()
+
+        speed = speed_increase.update()
 
         player.update()
         obstacle.update(speed)
