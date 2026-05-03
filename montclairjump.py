@@ -98,11 +98,94 @@ class Obstacle:  # obstacle class
         else:
             pygame.draw.rect(screen, BLACK, (self.x, self.y, self.IMG_W, self.IMG_H))
 
-    def get_rect(self):
-        return pygame.Rect(self.x + 5, self.y, self.IMG_W - 10, GROUND_Y - self.y)
+    def get_rect(self): #I changed this to make the hitbox for the obstacles smaller
+        return pygame.Rect(
+            self.x + 30,        #move in from left
+            self.y + 20,        #move down
+            self.IMG_W - 50,    #reduce width
+            self.IMG_H - 60     #reduce height
+        )
 
     def off_screen(self):
         return self.x + self.IMG_W < 0
+    
+
+class SpeedIncrease: # increase speed class
+    def __init__(self, start_speed=6, max_speed=20, increase_rate=0.002):
+        self.speed = start_speed # current speed
+        self.max_speed = max_speed # speed cap
+        self.increase_rate = increase_rate #rate of increase
+
+    def update(self): #increase speed each frame
+        if self.speed < self.max_speed:
+            self.speed += self.increase_rate
+        return self.speed
+    
+
+class Collisions: #collisions end the game
+    def __init__(self):
+        self.game_over = False #check for collision
+
+    def check_collision(self, player, obstacle):
+        #get hitboxes
+        player_rect = player.get_rect()
+        obstacle_rect = obstacle.get_rect()
+
+        if player_rect.colliderect(obstacle_rect):
+            self.game_over = True
+
+        return self.game_over
+    
+
+class ScoreSystem:
+    def __init__(self):
+        self.score = 0
+        self.last_update = pygame.time.get_ticks()
+
+    def update(self):
+        current_time = pygame.time.get_ticks()
+
+        if current_time - self.last_update >= 100: #10 points per second
+            self.score +=1
+            self.last_update = current_time
+
+    def draw(self, screen):
+        score_text = f"{self.score:05d}" #format so score is always 5 digits
+        font = pygame.font.SysFont(None, 36)
+        text_surface = font.render(score_text, True, BLACK)
+        screen.blit(text_surface, (WIDTH - 120, 20))
+
+
+class GameState:
+    START = 0
+    PLAYING = 1
+    GAME_OVER = 2
+
+    def __init__(self):
+        self.state = GameState.START
+
+        self.title_font = pygame.font.SysFont(None, 64)
+        self.small_font = pygame.font.SysFont(None, 32)
+
+    def draw_start(self, screen):
+        screen.fill(SKY)
+
+        title = self.title_font.render("Montclair Jump", True, BLACK)
+        prompt = self.small_font.render("Press SPACE to start", True, BLACK)
+
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 120))
+        screen.blit(prompt, (WIDTH // 2 - prompt.get_width() // 2, 200))
+
+    def draw_game_over(self, screen, score):
+        screen.fill(SKY)
+
+        title = self.title_font.render("Game Over", True, BLACK)
+        score_text = self.small_font.render(f"Score: {score:05d}", True, BLACK)
+        prompt = self.small_font.render("Press SPACE to restart", True, BLACK)
+
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 100))
+        screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 170))
+        screen.blit(prompt, (WIDTH // 2 - prompt.get_width() // 2, 230))
 
 
 #main game loop
@@ -115,6 +198,14 @@ def main():
     obstacle = Obstacle()
     speed = 6
 
+    speed_increase = SpeedIncrease(start_speed=speed) #manage speed increase
+
+    collision_check = Collisions()
+
+    score_system = ScoreSystem()
+
+    game_state = GameState()
+
     while True:
         clock.tick(FPS)
 
@@ -123,20 +214,55 @@ def main():
                 pygame.quit(); sys.exit() # quit
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_SPACE, pygame.K_UP): # jump on space or up arrow
-                    player.jump()
+                    #Game start
+                    if game_state.state == GameState.START:
+                        game_state.state = GameState.PLAYING
+                    #Game over and restart
+                    elif game_state.state == GameState.GAME_OVER:
+                        player = Player()
+                        obstacle = Obstacle()
+                        speed = 6
+                        speed_increase = SpeedIncrease(start_speed=speed)
+                        collision_check = Collisions()
+                        score_system = ScoreSystem()
 
-        player.update()
-        obstacle.update(speed)
+                        game_state.state = GameState.PLAYING
 
-        if obstacle.off_screen(): # for now, one obstacle spawns, then when it hits the wall it respawns, will add more later
-            obstacle = Obstacle()
+                    elif game_state.state == GameState.PLAYING:
+                        player.jump()
+
+        if game_state.state == GameState.PLAYING:
+            speed = speed_increase.update()
+
+            player.update()
+            obstacle.update(speed)
+            score_system.update()
+
+            if collision_check.check_collision(player, obstacle):
+                game_state.state = GameState.GAME_OVER
+            
+            if obstacle.off_screen(): # for now, one obstacle spawns, then when it hits the wall it respawns, will add more later
+                obstacle = Obstacle()
 
         # Draw
-        screen.fill(SKY)
-        pygame.draw.line(screen, BLACK, (0, GROUND_Y), (WIDTH, GROUND_Y), 2)
-        pygame.draw.rect(screen, SKY, (0, GROUND_Y, WIDTH, HEIGHT - GROUND_Y))
-        obstacle.draw(screen)
-        player.draw(screen)
+        if game_state.state == GameState.START:
+            game_state.draw_start(screen)
+
+        elif game_state.state == GameState.PLAYING:
+            screen.fill(SKY)
+            pygame.draw.line(screen, BLACK, (0, GROUND_Y), (WIDTH, GROUND_Y), 2)
+            pygame.draw.rect(screen, SKY, (0, GROUND_Y, WIDTH, HEIGHT - GROUND_Y))
+
+            obstacle.draw(screen)
+            player.draw(screen)
+            score_system.draw(screen)
+
+            pygame.draw.rect(screen, RED, player.get_rect(), 2)          # These are for debugging to see the hitboxes of the 
+            pygame.draw.rect(screen, BLACK, obstacle.get_rect(), 2)      # obstacles and the player
+
+        elif game_state.state == GameState.GAME_OVER:
+            game_state.draw_game_over(screen, score_system.score)
+
         pygame.display.flip()
         
 
