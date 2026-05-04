@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Montclair Jump</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --red: #D1190D;
+      --sky: #7CC7F2;
+      --night: #28284a;
+      --black: #333333;
+      --yellow: #FFDC00;
+      --gray: #C8C8C8;
+      --card: rgba(255,255,255,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--night);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0px, transparent 38px,
+          rgba(255,255,255,0.015) 38px, rgba(255,255,255,0.015) 40px
+        ),
+        linear-gradient(180deg, #1a1a3a 0%, #28284a 60%, #1a1228 100%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* little building silhouettes */
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 180px;
+      background:
+        /* buildings via box-shadow trick using repeating gradient */
+        repeating-linear-gradient(
+          90deg,
+          #0f0f22 0px,  #0f0f22 45px,
+          transparent  45px, transparent 55px,
+          #0d0d1e 55px, #0d0d1e 90px,
+          transparent  90px, transparent 95px,
+          #111128 95px, #111128 150px,
+          transparent  150px, transparent 155px,
+          #0e0e20 155px, #0e0e20 200px,
+          transparent  200px, transparent 210px
+        );
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 36px;
+    }
+
+    /* ── header ── */
+    header {
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 10vw, 96px);
+      line-height: 0.9;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 4px 4px 0 var(--red), 8px 8px 0 rgba(209,25,13,0.3);
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      color: var(--gray);
+      font-size: 15px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── game frame ── */
+    .game-wrapper {
+      width: 100%;
+      max-width: 920px;
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 30px 80px rgba(0,0,0,0.6),
+        0 0 60px rgba(124,199,242,0.08);
+      background: #000;
+      position: relative;
+    }
+
+    .game-label {
+      background: rgba(0,0,0,0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.r { background: #ff5f57; }
+    .dot.y { background: #febc2e; }
+    .dot.g { background: #28c840; }
+
+    iframe {
+      display: block;
+      width: 100%;
+      height: 380px;
+      border: none;
+      background: var(--sky);
+    }
+
+    /* ── info row ── */
+    .info-row {
+      width: 100%;
+      max-width: 920px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 24px 28px;
+      backdrop-filter: blur(6px);
+    }
+
+    .card h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1.5px;
+      color: var(--yellow);
+      margin-bottom: 16px;
+    }
+
+    .controls-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .controls-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    kbd {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-bottom: 3px solid rgba(255,255,255,0.15);
+      border-radius: 5px;
+      padding: 3px 10px;
+      font-family: 'DM Sans', monospace;
+      font-size: 13px;
+      color: #fff;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .about-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.7;
+    }
+
+    .about-text strong {
+      color: var(--sky);
+    }
+
+    /* ── star badge row ── */
+    .badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .badge {
+      background: rgba(255,220,0,0.12);
+      border: 1px solid rgba(255,220,0,0.3);
+      color: var(--yellow);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ── footer ── */
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.5px;
+    }
+
+    footer a {
+      color: var(--sky);
+      text-decoration: none;
+    }
+
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .info-row { grid-template-columns: 1fr; }
+      iframe { height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <header>
+      <div class="tag">🦅 MSU Game Project</div>
+      <h1>MONTCLAIR<br>JUMP</h1>
+      <p class="subtitle">Made by: Lucas, Ethan, and Jerick</p>
+    </header>
+
+    <div class="game-wrapper">
+      <div class="game-label">
+        <span class="dot r"></span>
+        <span class="dot y"></span>
+        <span class="dot g"></span>
+        <span style="margin-left:6px;">montclairjump — play here</span>
+      </div>
+      <iframe
+        src="game.html"
+        title="Montclair Jump"
+        allowfullscreen
+        allow="autoplay"
+      ></iframe>
+    </div>
+
+    <div class="info-row">
+      <div class="card">
+        <h2>Controls</h2>
+        <ul class="controls-list">
+          <li><kbd>Space</kbd> Jump / Start</li>
+          <li><kbd>↑</kbd> Jump (alt)</li>
+          <li><kbd>S</kbd> Duck</li>
+          <li><kbd>Space</kbd> Restart after game over</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>About</h2>
+        <p class="about-text">
+          Dodge <strong>buildings</strong> and <strong>footballs</strong>
+          as the Red Hawk flies through Montclair.
+          <strong>How far can you run?</strong>
+        </p>
+        <div class="badges">
+          <span class="badge">⭐ Every 1000 pts</span>
+          <span class="badge">🚀 Speed gradually increases over time</span>
+          <span class="badge">🌙 Sky changes</span>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Built with <a href="https://www.pygame.org/" target="_blank">Pygame</a> &amp;
+      <a href="https://pygame-web.github.io/" target="_blank">Pygbag</a> ·
+      <a href="https://github.com/lucrodgit/montclairjump" target="_blank">View source on GitHub</a>
+    </footer>
+
+  </div>
+</body>
+</html>
