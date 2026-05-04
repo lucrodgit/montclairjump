@@ -1,8 +1,11 @@
+# Pygbag setup game file
+
 import pygame
 import random
 import sys
 import os
 import math
+import asyncio
 
 pygame.init()
 pygame.mixer.init()
@@ -110,7 +113,6 @@ class Player:
             self.vel_y = JUMP_STRENGTH
             self.grounded = False
 
-            # note jump sound
             if jump_sound:
                 jump_sound.play()
 
@@ -157,7 +159,6 @@ class Obstacle:
             self.IMG_H = random.choice([80, 120, 140])
             self.x = WIDTH + random.randint(250, 500)
             self.y = GROUND_Y - self.IMG_H
-            # building colors
             self.color = random.choice([(60, 60, 60), (40, 40, 60), (50, 50, 80), (70, 70, 90)])
 
         else:
@@ -165,7 +166,7 @@ class Obstacle:
             self.IMG_H = 40
             self.x = WIDTH + random.randint(250, 500)
             self.y = random.choice([210, 240, 270])
-            self.color = (139, 69, 19)  # football color
+            self.color = (139, 69, 19)
 
     def update(self, speed):
         self.x -= speed
@@ -241,7 +242,6 @@ class ScoreSystem:
 
             self.stars = self.score // 1000
 
-        # note high score sound
         if self.score > self.high_score:
             self.high_score = self.score
 
@@ -328,9 +328,9 @@ def draw_city(screen, score):
 
 
 # =========================================================
-# Main
+# Main  —  must be async for pygbag
 # =========================================================
-def main():
+async def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Montclair Jump")
     clock = pygame.time.Clock()
@@ -393,7 +393,6 @@ def main():
 
             if collision_check.check_collision(player, obstacle):
 
-                # note explosion sound
                 if explode_sound:
                     explode_sound.play()
 
@@ -422,7 +421,7 @@ def main():
             )
 
         pygame.display.flip()
+        await asyncio.sleep(0)  # REQUIRED: yields control back to the browser every frame
 
 
-if __name__ == "__main__":
-    main()
+asyncio.run(main())
